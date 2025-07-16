@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
   const searchButton = document.querySelector(".search-btn");
   const usernameInput = document.querySelector(".user-input");
   const statsContainer = document.querySelector(".stats-container");
@@ -12,38 +12,54 @@ document.addEventListener("DOMContentLoaded", function() {
 
   //return true or false based on a regex
   function validateUsername(username) {
-    if(username.trim() === "") {
-      alert("Username should not be empty")
+    if (username.trim() === "") {
+      alert("Username should not be empty");
       return false;
     }
 
     const regex = /^[a-zA-Z0-9_-]{4,16}$/;
     const isMatching = regex.test(username);
-    if(!isMatching) {
+    if (!isMatching) {
       alert("Invalid username");
     }
     return isMatching;
   }
 
   async function fetchUserDetails(username) {
-    const url = `https://leetcode-stats-api.herokuapp.com/${username}`;
     try {
       searchButton.textContent = "Searching...";
       searchButton.disabled = true;
+      statsContainer.style.setProperty("visibility", "hidden");
 
-      const response = await fetch(url);
-      if(!response.ok) {
-        throw new Error("Unable to fetch the user details");
+      const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+      const targetUrl = "https://leetcode.com/graphql/";
+
+      const myHeaders = new Headers();
+      myHeaders.append("content-type", "application/json");
+
+      const graphql = JSON.stringify({
+        query:
+          "\n    query userSessionProgress($username: String!) {\n  allQuestionsCount {\n    difficulty\n    count\n  }\n  matchedUser(username: $username) {\n    submitStats {\n      acSubmissionNum {\n        difficulty\n        count\n        submissions\n      }\n      totalSubmissionNum {\n        difficulty\n        count\n        submissions\n      }\n    }\n  }\n}\n    ",
+        variables: { username: `${username}` },
+      });
+      const requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        body: graphql,
+      };
+
+      const response = await fetch(proxyUrl + targetUrl, requestOptions);
+      if (!response.ok) {
+        throw new Error("Unable to fetch the User details");
       }
       const parsedData = await response.json();
       console.log("Logging data: ", parsedData);
-      
+
       displayUserData(parsedData);
-    }
-    catch(err) {
+    } catch (err) {
+      console.error(err);
       statsContainer.innerHTML = `<p>No data Found</p>`;
-    }
-    finally {
+    } finally {
       searchButton.textContent = "Search";
       searchButton.disabled = false;
     }
@@ -56,25 +72,85 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   function displayUserData(parsedData) {
-    const totalQues = parsedData.totalQuestions;
-    const totalEasyQues = parsedData.totalEasy;
-    const totalMediumQues = parsedData.totalMedium;
-    const totalHardQues = parsedData.totalHard;
+    statsContainer.style.setProperty("visibility", "initial");
 
-    const solvedTotalQues = parsedData.totalSolved;
-    const solvedTotalEasyQues = parsedData.easySolved;
-    const solvedTotalMediumQues = parsedData.mediumSolved;
-    const solvedTotalHardQues = parsedData.hardSolved;
+    const totalQues = parsedData.data.allQuestionsCount[0].count;
+    const totalEasyQues = parsedData.data.allQuestionsCount[1].count;
+    const totalMediumQues = parsedData.data.allQuestionsCount[2].count;
+    const totalHardQues = parsedData.data.allQuestionsCount[3].count;
 
-    updateProgress(solvedTotalEasyQues, totalEasyQues, easyLabel, easyProgressCircle);
-    updateProgress(solvedTotalMediumQues, totalMediumQues, mediumLabel, mediumProgressCircle);
-    updateProgress(solvedTotalHardQues, totalHardQues, hardLabel, hardProgressCircle);
+    const solvedTotalQues =
+      parsedData.data.matchedUser.submitStats.acSubmissionNum[0].count;
+    const solvedTotalEasyQues =
+      parsedData.data.matchedUser.submitStats.acSubmissionNum[1].count;
+    const solvedTotalMediumQues =
+      parsedData.data.matchedUser.submitStats.acSubmissionNum[2].count;
+    const solvedTotalHardQues =
+      parsedData.data.matchedUser.submitStats.acSubmissionNum[3].count;
+
+    updateProgress(
+      solvedTotalEasyQues,
+      totalEasyQues,
+      easyLabel,
+      easyProgressCircle
+    );
+    updateProgress(
+      solvedTotalMediumQues,
+      totalMediumQues,
+      mediumLabel,
+      mediumProgressCircle
+    );
+    updateProgress(
+      solvedTotalHardQues,
+      totalHardQues,
+      hardLabel,
+      hardProgressCircle
+    );
+
+    const cardData = [
+      {
+        label: "Overall submissions",
+        value:
+          parsedData.data.matchedUser.submitStats.totalSubmissionNum[0]
+            .submissions,
+      },
+      {
+        label: "Overall Easy submissions",
+        value:
+          parsedData.data.matchedUser.submitStats.totalSubmissionNum[1]
+            .submissions,
+      },
+      {
+        label: "Overall Medium submissions",
+        value:
+          parsedData.data.matchedUser.submitStats.totalSubmissionNum[2]
+            .submissions,
+      },
+      {
+        label: "Overall Hard submissions",
+        value:
+          parsedData.data.matchedUser.submitStats.totalSubmissionNum[3]
+            .submissions,
+      },
+    ];
+
+    cardStatsContainer.innerHTML = cardData
+      .map((data) => {
+        return `
+          <div class="card">
+            <h4>${data.label}</h4>
+            <p>${data.value}</p>
+          </div>
+        `;
+      })
+      .join("");
   }
 
-  searchButton.addEventListener("click", function() {
+  searchButton.addEventListener("click", function () {
     const username = usernameInput.value;
     console.log("Logging username: ", username);
-    if(validateUsername(username)) {
+
+    if (validateUsername(username)) {
       fetchUserDetails(username);
     }
   });

@@ -8,7 +8,7 @@
 }
 
 body {
-  background-color: #546A7B;
+  background-color: #546a7b;
   color: white;
   height: 100vh;
   display: flex;
@@ -20,7 +20,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  background-color: #0D1F2D;
+  background-color: #0d1f2d;
   padding: 20px;
   border-radius: 5px;
   width: 50%;
@@ -56,10 +56,6 @@ h1 {
   border: none;
 }
 
-.stats-container {
-  /* display: none; */
-}
-
 .progress {
   display: flex;
   justify-content: space-evenly;
@@ -80,9 +76,40 @@ h1 {
   font-size: 1rem;
   font-weight: 700;
   background: conic-gradient(#299f5d var(--progress-degree, 0%), #283a2e 0%);
+  cursor: pointer;
 }
 
 .circle span {
   position: relative;
   z-index: 2;
+}
+
+.stats-cards {
+  margin: 2rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.card {
+  background-color: crimson;
+  width: 200px;
+  max-width: 290px;
+  padding: 20px;
+  border-radius: 10px;
+  font-size: 1rem;
+  align-self: stretch;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: scale(1.02);
+}
+
+.card h4 {
+  text-transform: capitalize;
+  margin-bottom: 2px;
 }
