@@ -35,8 +35,10 @@ document.addEventListener("DOMContentLoaded", function() {
       if(!response.ok) {
         throw new Error("Unable to fetch the user details");
       }
-      const data = await response.json();
-      console.log("Logging data: ", data);
+      const parsedData = await response.json();
+      console.log("Logging data: ", parsedData);
+      
+      displayUserData(parsedData);
     }
     catch(err) {
       statsContainer.innerHTML = `<p>No data Found</p>`;
@@ -45,7 +47,29 @@ document.addEventListener("DOMContentLoaded", function() {
       searchButton.textContent = "Search";
       searchButton.disabled = false;
     }
-  } 
+  }
+
+  function updateProgress(solved, total, label, circle) {
+    const progressDeg = (solved / total) * 100;
+    circle.style.setProperty("--progress-degree", `${progressDeg}%`);
+    label.textContent = `${solved}/${total}`;
+  }
+
+  function displayUserData(parsedData) {
+    const totalQues = parsedData.totalQuestions;
+    const totalEasyQues = parsedData.totalEasy;
+    const totalMediumQues = parsedData.totalMedium;
+    const totalHardQues = parsedData.totalHard;
+
+    const solvedTotalQues = parsedData.totalSolved;
+    const solvedTotalEasyQues = parsedData.easySolved;
+    const solvedTotalMediumQues = parsedData.mediumSolved;
+    const solvedTotalHardQues = parsedData.hardSolved;
+
+    updateProgress(solvedTotalEasyQues, totalEasyQues, easyLabel, easyProgressCircle);
+    updateProgress(solvedTotalMediumQues, totalMediumQues, mediumLabel, mediumProgressCircle);
+    updateProgress(solvedTotalHardQues, totalHardQues, hardLabel, hardProgressCircle);
+  }
 
   searchButton.addEventListener("click", function() {
     const username = usernameInput.value;

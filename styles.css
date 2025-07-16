@@ -74,6 +74,7 @@ h1 {
   border: 4px solid #299f5d;
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: 1rem;
@@ -82,6 +83,6 @@ h1 {
 }
 
 .circle span {
-  position: absolute;
+  position: relative;
   z-index: 2;
 }
